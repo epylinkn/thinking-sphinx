@@ -126,7 +126,16 @@ module ThinkingSphinx
       
       source_class.reflections[name] ||=
         ::ActiveRecord::Reflection::AssociationReflection.new(
-          reflection.macro, name, casted_options(poly_class, reflection),
+          reflection.macro,
+          name,
+          lambda { |association|
+            reflection = association.reflection
+              where(
+              association.parent.aliased_table_name.to_sym =>
+              {reflection.foreign_type => reflection.class_name}
+              )
+          },
+          casted_options(poly_class, reflection),
           reflection.active_record
         )
     end
